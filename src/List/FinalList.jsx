@@ -8,21 +8,41 @@ const FinalList= () => {
 
     const [dataArray, setDataArray] = useState([]);
      const [selectedYear, setSelectedYear] = useState(''); 
+     const [filteredData, setFilteredData] = useState([]);
 
 
-     useEffect(() => {
-      // Initialize staticDataArray inside the useEffect callback
-      const staticDataArray = [
-          { id: 1, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility1', reportingYear: '2022-2023', month: 'January', fuel: 'petrol', quantity: 14478, units: 'Litres', emission: 876, typeofvehicle: 'Forklift' },
-          { id: 2, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility2', reportingYear: '2022-2023', month: 'February', fuel: 'diesel', quantity: 463, units: 'Litres', emission: 853, typeofvehicle: 'Forklift' },
-          { id: 3, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility3', reportingYear: '2022-2023', month: 'March', fuel: 'petrol', quantity: 19767, units: 'Litres', emission: 254, typeofvehicle: 'Truck' },
-          { id: 4, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility4', reportingYear: '2022-2023', month: 'January', fuel: 'diesel', quantity: 80, units: 'Litres', emission: 233, typeofvehicle: 'Car' },
-          { id: 5, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility5', reportingYear: '2022-2023', month: 'January', fuel: 'diesel', quantity: 177, units: 'Litres', emission: 55, typeofvehicle: 'Forklift' }
-      ];
+  //    useEffect(() => {
+  //     // Initialize staticDataArray inside the useEffect callback
+  //     const staticDataArray = [
+  //         { id: 1, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility1', reportingYear: '2022-2023', month: 'January', fuel: 'petrol', quantity: 14478, units: 'Litres', emission: 876, typeofvehicle: 'Forklift' },
+  //         { id: 2, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility2', reportingYear: '2022-2023', month: 'February', fuel: 'diesel', quantity: 463, units: 'Litres', emission: 853, typeofvehicle: 'Forklift' },
+  //         { id: 3, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility3', reportingYear: '2022-2023', month: 'March', fuel: 'petrol', quantity: 19767, units: 'Litres', emission: 254, typeofvehicle: 'Truck' },
+  //         { id: 4, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility4', reportingYear: '2022-2023', month: 'January', fuel: 'diesel', quantity: 80, units: 'Litres', emission: 233, typeofvehicle: 'Car' },
+  //         { id: 5, emissionType: 'Company Owned vehicles usage (Mobile combustion)', facilty: 'Facility5', reportingYear: '2022-2023', month: 'January', fuel: 'diesel', quantity: 177, units: 'Litres', emission: 55, typeofvehicle: 'Forklift' }
+  //     ];
 
-      setDataArray(staticDataArray); // Set the static data array to the state
-  }, []); 
-    const hasMoreUsers = dataArray.length > 3;
+  //     setDataArray(staticDataArray); // Set the static data array to the state
+  // }, []); 
+
+  useEffect(() => {
+    // Fetch data from the backend API
+    const fetchData = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/data');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setDataArray(data);
+            setFilteredData(data); // Initially, display all data
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    fetchData();
+}, []);
+
 
     const yearRanges = [
         '2022-2023',
@@ -34,9 +54,25 @@ const FinalList= () => {
 
       ];
       const handleYearChange = (event) => {
-        setSelectedYear(event.target.value);
-        // Add logic here to handle the selected year
-      };
+        const selected = event.target.value;
+        setSelectedYear(selected);
+
+        if (selected) {
+            // Filter data based on the selected year
+            const filtered = dataArray.filter(item => item.reportingYear === selected);
+            setFilteredData(filtered);
+        } else {
+            // If no year is selected, show all data
+            setFilteredData(dataArray);
+        }
+    };
+
+    const hasMoreUsers = filteredData.length > 3;
+
+      
+      // const hasMoreUsers = dataArray.length > 3;
+
+
     
   return (
     <div className="mobile-combustion-list">
@@ -177,7 +213,7 @@ const FinalList= () => {
                 <b className="typeofvehicle">TYPE OF VEHICLE</b>
                   <div className={`rectangle-group-container ${hasMoreUsers ? 'scrollable' : ''}`}>
                   <div>
-                  {dataArray.map((item)=>(
+                  {filteredData.map((item) => (
                   <div key={item.id} className="rectangle-group">
                     <div className="rectangle-div" />
                     <div className="frame-wrapper2">
